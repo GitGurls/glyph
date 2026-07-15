@@ -1,0 +1,113 @@
+// GLYPH — AI generation studio
+// Postgres via the included docker-compose.yml (free, runs locally — no cloud
+// account needed). `npm run db:up` starts it, DATABASE_URL in .env.example
+// already points at it.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  FLAGGED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String?
+  role         Role     @default(USER)
+  credits      Int      @default(50)
+  theme        String   @default("dark")
+  createdAt    DateTime @default(now())
+
+  images        Image[]
+  transactions  CreditTransaction[]
+  apiKeys       ApiKey[]
+  collections   Collection[]
+  refreshTokens RefreshToken[]
+}
+
+// Refresh tokens are stored (hashed) so any single token can be revoked without
+// invalidating every session, and a stolen access token still expires in minutes.
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  tokenHash String   @unique
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Image {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  prompt         String
+  enhancedPrompt String?
+  model          String // "image" | "face-swap" | "video"
+  status         JobStatus @default(QUEUED)
+  resultUrl      String?
+  isPublic       Boolean   @default(false)
+  isFavorite     Boolean   @default(false)
+  cost           Int
+  collectionId   String?
+  collection     Collection? @relation(fields: [collectionId], references: [id])
+  moderationFlag String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Collection {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  images    Image[]
+  createdAt DateTime @default(now())
+}
+
+model CreditTransaction {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  amount       Int // positive = credit added, negative = debit
+  type         String // "purchase" | "generation" | "refund" | "signup_bonus"
+  balanceAfter Int
+  createdAt    DateTime @default(now())
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  key        String    @unique
+  label      String
+  lastUsedAt DateTime?
+  revoked    Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+}
+
+model PromptTemplate {
+  id        String   @id @default(cuid())
+  title     String
+  template  String
+  category  String
+  createdAt DateTime @default(now())
+}
+

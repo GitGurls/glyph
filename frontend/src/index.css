@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-bone text-ink font-body antialiased;
+}
+
+.dark body {
+  @apply bg-ink text-bone;
+}
+
+::selection {
+  background: #7c5cfc;
+  color: white;
+}
+
+/* visible focus ring everywhere, keyboard users first */
+:focus-visible {
+  outline: 2px solid #7c5cfc;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.glyph-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.glyph-scrollbar::-webkit-scrollbar-thumb {
+  background: #565b6650;
+  border-radius: 999px;
+}

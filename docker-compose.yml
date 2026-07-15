@@ -1,0 +1,86 @@
+version: "3.9"
+
+# Two ways to use this file:
+#
+#   docker compose up -d postgres redis      → just the free local infra,
+#                                               run `npm run dev` / `npm run worker`
+#                                               on your host machine against it
+#
+#   docker compose up -d --build             → the whole stack containerized,
+#                                               closer to how this would actually
+#                                               be deployed
+#
+# Everything here is free and runs entirely on your machine — no cloud account.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: glyph
+      POSTGRES_PASSWORD: glyph
+      POSTGRES_DB: glyph
+    ports:
+      - "5432:5432"
+    volumes:
+      - glyph_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glyph"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - glyph_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://glyph:glyph@postgres:5432/glyph
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: change-this-to-a-long-random-string
+      CLIENT_URL: http://localhost:5173
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+
+  worker:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://glyph:glyph@postgres:5432/glyph
+      REDIS_URL: redis://redis:6379
+    command: sh -c "npx tsx src/worker.ts"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  glyph_pg_data:
+  glyph_redis_data:

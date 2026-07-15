@@ -1,0 +1,116 @@
+# GLYPH — AI Generation Studio
+
+A Higgsfield-inspired full-stack AI generation platform, built as a portfolio project.
+Frontend → Backend → async job queue → self-hosted models (image / face-swap / video),
+with the systems that separate a demo from a product: a real Redis-backed job queue,
+a credit ledger, refresh-token auth, Zod validation everywhere, a moderation pass,
+real-time job status, an admin dashboard, and a public developer API.
+
+## Stack
+
+- **Frontend** — React + TypeScript + Vite + Tailwind, Socket.IO client, Recharts
+- **Backend** — Node + Express + TypeScript, Prisma + Postgres, Redis (BullMQ queue + rate limiting + pub/sub), JWT access + refresh tokens, Zod validation, Helmet
+- **Infra** — Postgres + Redis via the included `docker-compose.yml` — **entirely free, runs locally, no cloud account needed**
+
+## What's real vs. what's mocked
+
+Being upfront about this matters more than pretending it's 100% production —
+here's the honest split:
+
+| Piece | Status |
+|---|---|
+| Job queue (BullMQ + Redis, retries, dead-letter) | **Real** |
+| Credit ledger (append-only, DB-transactional) | **Real** |
+| Auth (short-lived JWT + rotating refresh tokens, hashed & revocable) | **Real** |
+| Input validation (Zod on every route) | **Real** |
+| Rate limiting (Redis-backed, works across instances) | **Real** |
+| Security headers (Helmet), CORS | **Real** |
+| Stripe checkout + webhook signature verification | **Real**, if you add free Stripe test-mode keys — otherwise falls back to an instant mock grant |
+| Unit tests (Vitest) | **Real**, covers validation + moderation logic |
+| CI (GitHub Actions: typecheck, test, build) | **Real** |
+| Docker (Dockerfiles + full docker-compose stack) | **Real** |
+| AI models (image / face-swap / video generation) | **Mocked** — returns placeholder images after a realistic delay. Real inference needs GPU compute, which isn't free; the queue/webhook/credit plumbing around it is real and the mock is a drop-in swap point (see `backend/src/worker.ts`) |
+
+## Running locally
+
+### 1. Start Postgres + Redis (free, local, no signup)
+
+```bash
+docker compose up -d postgres redis
+```
+
+### 2. Backend
+
+```bash
+cd backend
+cp .env.example .env
+npm install
+npx prisma migrate dev --name init
+npm run seed        # creates prompt templates + admin@glyph.dev / admin123
+npm run dev          # API server → http://localhost:4000
+```
+
+In a second terminal, start the worker (this is what actually processes jobs):
+
+```bash
+cd backend
+npm run worker
+```
+
+### 3. Frontend
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev          # http://localhost:5173
+```
+
+### 4. Tests
+
+```bash
+cd backend
+npm test
+```
+
+Register a new account (50 free credits) or log in as the seeded admin to see
+the Admin dashboard.
+
+## Architecture notes worth knowing for an interview
+
+- **Job queue**: generation requests return `202 Accepted` immediately. The API
+  server only enqueues; a separate **worker process** (`npm run worker`) picks
+  jobs off Redis, does the (mocked) generation work, and publishes status back
+  over Redis pub/sub. The API server subscribes and re-broadcasts to the right
+  browser over Socket.IO. Failed jobs retry 3x with exponential backoff, and
+  exhausted jobs stay in Redis as a dead-letter queue instead of vanishing.
+- **Credits ledger**: every balance change is a row in `CreditTransaction`
+  (`amount`, `type`, `balanceAfter`), written inside the same DB transaction as
+  the balance update — this is what makes the balance auditable and race-safe.
+- **Auth**: access tokens expire in 15 minutes. Refresh tokens are random,
+  stored **hashed** in Postgres, single-use (rotated on every refresh), and
+  individually revocable — a stolen access token is short-lived, and logout
+  actually invalidates the session server-side instead of just clearing local storage.
+- **Validation**: every route's request body goes through a Zod schema before
+  any handler logic runs — malformed input never reaches business logic.
+- **Rate limiting**: Redis `INCR` + `EXPIRE`, keyed per user/route, so it holds
+  up correctly if you ever run more than one API server instance.
+- **Developer API**: `x-api-key` auth hits the exact same `createGenerationJob`
+  function the browser's JWT-authenticated route uses — one pipeline, two doors in.
+- **Moderation**: every prompt is checked before it's queued, and flagged jobs
+  land in an admin review queue rather than being generated silently.
+
+## Deployment
+
+- `docker compose up -d --build` runs the **entire stack** containerized —
+  Postgres, Redis, the API server, the worker, and the frontend (served by nginx).
+- `.github/workflows/ci.yml` runs typecheck + tests + build on every push — wire
+  it to a free Render/Fly.io/Railway deploy step once you're ready to host it live.
+
+## Remaining gap to real production
+
+The one thing that genuinely can't be made free: **real AI inference**. Swapping
+the mock in `backend/src/worker.ts` for a real image/face-swap/video model
+means either renting GPU compute or calling a paid inference API — there's no
+way around that cost. Everything else in this repo — queueing, auth, payments
+plumbing, validation, rate limiting, tests, CI, Docker — is genuinely production-shaped.
