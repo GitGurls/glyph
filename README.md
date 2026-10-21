@@ -1,12 +1,4 @@
-# GLYPH — AI Generation Studio
 
-
-
-- **Frontend** — React + TypeScript + Vite + Tailwind, Socket.IO client, Recharts
-- **Backend** — Node + Express + TypeScript, Prisma + Postgres, Redis (BullMQ queue + rate limiting + pub/sub), JWT access + refresh tokens, Zod validation, Helmet
-- **Infra** — Postgres + Redis via the included `docker-compose.yml` — **entirely free, runs locally, no cloud account needed**
-
-## What's real vs. what's mocked
 
 Being upfront about this matters more than pretending it's 100% production —
 here's the honest split:
