@@ -1,9 +1,6 @@
 # GLYPH — AI Generation Studio
 
-A Higgsfield-inspired full-stack AI generation platform, built as a portfolio project.
-Fr
 
-## Stack
 
 - **Frontend** — React + TypeScript + Vite + Tailwind, Socket.IO client, Recharts
 - **Backend** — Node + Express + TypeScript, Prisma + Postgres, Redis (BullMQ queue + rate limiting + pub/sub), JWT access + refresh tokens, Zod validation, Helmet
