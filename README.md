@@ -1,10 +1,7 @@
 # GLYPH — AI Generation Studio
 
 A Higgsfield-inspired full-stack AI generation platform, built as a portfolio project.
-Frontend → Backend → async job queue → self-hosted models (image / face-swap / video),
-with the systems that separate a demo from a product: a real Redis-backed job queue,
-a credit ledger, refresh-token auth, Zod validation everywhere, a moderation pass,
-real-time job status, an admin dashboard, and a public developer API.
+Fr
 
 ## Stack
 
