@@ -3,19 +3,6 @@
 Being upfront about this matters more than pretending it's 100% production —
 here's the honest split:
 
-| Piece | Status |
-|---|---|
-| Job queue (BullMQ + Redis, retries, dead-letter) | **Real** |
-| Credit ledger (append-only, DB-transactional) | **Real** |
-| Auth (short-lived JWT + rotating refresh tokens, hashed & revocable) | **Real** |
-| Input validation (Zod on every route) | **Real** |
-| Rate limiting (Redis-backed, works across instances) | **Real** |
-| Security headers (Helmet), CORS | **Real** |
-| Stripe checkout + webhook signature verification | **Real**, if you add free Stripe test-mode keys — otherwise falls back to an instant mock grant |
-| Unit tests (Vitest) | **Real**, covers validation + moderation logic |
-| CI (GitHub Actions: typecheck, test, build) | **Real** |
-| Docker (Dockerfiles + full docker-compose stack) | **Real** |
-| AI models (image / face-swap / video generation) | **Mocked** — returns placeholder images after a realistic delay. Real inference needs GPU compute, which isn't free; the queue/webhook/credit plumbing around it is real and the mock is a drop-in swap point (see `backend/src/worker.ts`) |
 
 ## Running locally
 
