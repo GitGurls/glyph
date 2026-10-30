@@ -1,8 +1,5 @@
 
 
-Being upfront about this matters more than pretending it's 100% production —
-here's the honest split:
-
 
 ## Running locally
 
