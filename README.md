@@ -3,17 +3,6 @@
 
 
 
-### 2. Backend
-
-```bash
-cd backend
-cp .env.example .env
-npm install
-npx prisma migrate dev --name init
-npm run seed        # creates prompt templates + admin@glyph.dev / admin123
-npm run dev          # API server → http://localhost:4000
-```
-
 In a second terminal, start the worker (this is what actually processes jobs):
 
 ```bash
