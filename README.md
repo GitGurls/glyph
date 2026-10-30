@@ -1,15 +1,6 @@
 
 
 
-
-
-In a second terminal, start the worker (this is what actually processes jobs):
-
-```bash
-cd backend
-npm run worker
-```
-
 ### 3. Frontend
 
 ```bash
