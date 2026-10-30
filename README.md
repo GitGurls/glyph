@@ -1,14 +1,7 @@
 
 
 
-### 3. Frontend
 
-```bash
-cd frontend
-cp .env.example .env
-npm install
-npm run dev          # http://localhost:5173
-```
 
 ### 4. Tests
 
