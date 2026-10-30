@@ -1,13 +1,7 @@
 
 
 
-## Running locally
 
-### 1. Start Postgres + Redis (free, local, no signup)
-
-```bash
-docker compose up -d postgres redis
-```
 
 ### 2. Backend
 
