@@ -13,9 +13,7 @@
 - **Rate limiting**: Redis `INCR` + `EXPIRE`, keyed per user/route, so it holds
   up correctly if you ever run more than one API server instance.
 - **Developer API**: `x-api-key` auth hits the exact same `createGenerationJob`
-  function the browser's JWT-authenticated route uses — one pipeline, two doors in.
-- **Moderation**: every prompt is checked before it's queued, and flagged jobs
-  land in an admin review queue rather than being generated silently.
+
 
 ## Deployment
 
