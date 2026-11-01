@@ -3,13 +3,6 @@
 
 
 
-### 4. Tests
-
-```bash
-cd backend
-npm test
-```
-
 Register a new account (50 free credits) or log in as the seeded admin to see
 the Admin dashboard.
 
