@@ -7,12 +7,7 @@
 - **Auth**: access tokens expire in 15 minutes. Refresh tokens are random,
   stored **hashed** in Postgres, single-use (rotated on every refresh), and
   individually revocable — a stolen access token is short-lived, and logout
-  actually invalidates the session server-side instead of just clearing local storage.
-- **Validation**: every route's request body goes through a Zod schema before
-  any handler logic runs — malformed input never reaches business logic.
-- **Rate limiting**: Redis `INCR` + `EXPIRE`, keyed per user/route, so it holds
-  up correctly if you ever run more than one API server instance.
-- **Developer API**: `x-api-key` auth hits the exact same `createGenerationJob`
+
 
 
 ## Deployment
