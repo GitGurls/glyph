@@ -2,12 +2,6 @@
 
 
 
-  (`amount`, `type`, `balanceAfter`), written inside the same DB transaction as
-  the balance update — this is what makes the balance auditable and race-safe.
-- **Auth**: access tokens expire in 15 minutes. Refresh tokens are random,
-  stored **hashed** in Postgres, single-use (rotated on every refresh), and
-  individually revocable — a stolen access token is short-lived, and logout
-
 
 
 ## Deployment
