@@ -2,19 +2,6 @@
 
 
 
-
-Register a new account (50 free credits) or log in as the seeded admin to see
-the Admin dashboard.
-
-## Architecture notes worth knowing for an interview
-
-- **Job queue**: generation requests return `202 Accepted` immediately. The API
-  server only enqueues; a separate **worker process** (`npm run worker`) picks
-  jobs off Redis, does the (mocked) generation work, and publishes status back
-  over Redis pub/sub. The API server subscribes and re-broadcasts to the right
-  browser over Socket.IO. Failed jobs retry 3x with exponential backoff, and
-  exhausted jobs stay in Redis as a dead-letter queue instead of vanishing.
-- **Credits ledger**: every balance change is a row in `CreditTransaction`
   (`amount`, `type`, `balanceAfter`), written inside the same DB transaction as
   the balance update — this is what makes the balance auditable and race-safe.
 - **Auth**: access tokens expire in 15 minutes. Refresh tokens are random,
