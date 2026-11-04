@@ -4,7 +4,6 @@
 
 
 
-## Deployment
 
 - `docker compose up -d --build` runs the **entire stack** containerized —
   Postgres, Redis, the API server, the worker, and the frontend (served by nginx).
