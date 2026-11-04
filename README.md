@@ -5,10 +5,6 @@
 
 
 
-- `docker compose up -d --build` runs the **entire stack** containerized —
-  Postgres, Redis, the API server, the worker, and the frontend (served by nginx).
-- `.github/workflows/ci.yml` runs typecheck + tests + build on every push — wire
-  it to a free Render/Fly.io/Railway deploy step once you're ready to host it live.
 
 ## Remaining gap to real production
 
